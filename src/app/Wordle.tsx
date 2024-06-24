@@ -116,6 +116,44 @@ const Row: React.FC<RowProps> = ({
     }
   }, [guess, isCurrentRow, prevGuessLength]);
 
+  const getStatus = (guessLetter: string, index: number): string => {
+    if (!isSubmitted || !guessLetter) return "";
+
+    if (guessLetter === targetWord[index]) {
+      return "correct";
+    }
+
+    // Count remaining occurrences of the letter in the target word
+    const remainingTargetCount = targetWord
+      .split("")
+      .reduce((count, letter, i) => {
+        if (letter === guessLetter && guess[i] !== letter) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+
+    // Count yellow positions of the letter before this index
+    const yellowBefore = guess
+      .slice(0, index)
+      .split("")
+      .filter(
+        (letter, i) =>
+          letter === guessLetter &&
+          targetWord.includes(letter) &&
+          letter !== targetWord[i]
+      ).length;
+
+    if (
+      targetWord.includes(guessLetter) &&
+      yellowBefore < remainingTargetCount
+    ) {
+      return "present";
+    }
+
+    return "absent";
+  };
+
   return (
     <div
       className="row"
@@ -123,33 +161,15 @@ const Row: React.FC<RowProps> = ({
     >
       {Array(wordLength)
         .fill(0)
-        .map((_, i) => {
-          let status = "";
-          if (isSubmitted && guess[i] && targetWord[i]) {
-            if (guess[i] === targetWord[i]) {
-              status = "correct";
-            } else {
-              let targetIndex = targetWord.indexOf(guess[i]);
-              let guessIndex = guess.indexOf(guess[i]);
-
-              if (targetIndex !== -1 && guessIndex === i) {
-                status = "present";
-                targetWord = targetWord.replace(guess[i], " ");
-              } else {
-                status = "absent";
-              }
-            }
-          }
-          return (
-            <Cell
-              key={i}
-              value={guess[i] || ""}
-              status={status}
-              animate={animationDelay[i]}
-              scale={scaleAnimation[i]}
-            />
-          );
-        })}
+        .map((_, i) => (
+          <Cell
+            key={i}
+            value={guess[i] || ""}
+            status={getStatus(guess[i], i)}
+            animate={animationDelay[i]}
+            scale={scaleAnimation[i]}
+          />
+        ))}
     </div>
   );
 };
