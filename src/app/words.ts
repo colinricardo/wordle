@@ -435,4 +435,5 @@ export const allWords = new Map<number, string>([
   [467, "corgi"],
   [468, "poodle"],
   [469, "beagle"],
+  [470, "colin"],
 ]);
